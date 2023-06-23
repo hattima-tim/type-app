@@ -1,5 +1,17 @@
-export default function Home() {
+"use client";
+
+import { useEffect, useRef } from "react";
+
+export default function App() {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
-    <h1>Hello world</h1>
-    )
+    <>
+      <input inputMode="text" ref={inputRef}></input>
+    </>
+  );
 }
