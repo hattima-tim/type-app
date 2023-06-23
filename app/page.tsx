@@ -94,6 +94,11 @@ export default function App() {
 
     const userInputGraphemes = segmentToChar(e.target.value);
     const userInputGraphemesCount = userInputGraphemes.length;
+
+    // return the func if user input exceeds the stored string value
+    // this will prevent errors
+    if (userInputGraphemesCount > graphemesFromStoredStr.length) return;
+
     indexOfTheGraphemeCurrentlyChecked.current = userInputGraphemesCount - 1;
 
     const isUserInputCorrect = checkUserInputChars(userInputGraphemes);
