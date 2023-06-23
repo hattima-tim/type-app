@@ -59,6 +59,33 @@ export default function App() {
       })
     );
 
+  const indexOfTheWordCurrentlyChecked = useRef(0);
+  const checkUserInputWords = (userInputWords: Array<string>) => {
+    indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
+
+    const wordToBeCheckedFromStoredStr =
+      wordsFromStoredStr[indexOfTheWordCurrentlyChecked.current];
+    const wordToBeCheckedFromUserInput =
+      userInputWords[indexOfTheWordCurrentlyChecked.current];
+
+    if (wordToBeCheckedFromStoredStr === wordToBeCheckedFromUserInput) {
+      const checkedWordChars = segmentToChar(wordToBeCheckedFromStoredStr);
+      const wordLength = checkedWordChars.length - 1;
+
+      const from = indexOfTheGraphemeCurrentlyChecked.current - wordLength;
+      const to = indexOfTheGraphemeCurrentlyChecked.current + 1;
+
+      updateInformationVisibleToTheUser((draft) => {
+        // Update the information directly instead of using splice
+        // using splice was causing bugs
+        for (let i = from; i < to; i++) {
+          draft[i].segment = checkedWordChars[i - from];
+          draft[i].color = "text-black";
+        }
+      });
+    }
+  };
+
   const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput(e.target.value);
 
@@ -84,6 +111,12 @@ export default function App() {
         informationToBeChanged.color = "text-black";
       });
     }
+
+    // the following code is necessary for when, a/multiple char in a word
+    // incorrectly typed but autocompletion of the whole word makes it
+    // correct. So, the following code checks if the whole word is correct
+    const userInputWords = segmentToWord(e.target.value);
+    checkUserInputWords(userInputWords);
   };
 
   return (
