@@ -52,6 +52,13 @@ export default function App() {
     return false;
   };
 
+  const [informationVisibileToTheUser, updateInformationVisibleToTheUser] =
+    useImmer(
+      graphemesFromStoredStr.map((s) => {
+        return { segment: s, color: "text-gray-500" };
+      })
+    );
+
   const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput(e.target.value);
 
@@ -61,7 +68,21 @@ export default function App() {
 
     const isUserInputCorrect = checkUserInputChars(userInputGraphemes);
     if (!isUserInputCorrect) {
+      updateInformationVisibleToTheUser((draft) => {
+        let informationToBeChanged =
+          draft[indexOfTheGraphemeCurrentlyChecked.current];
+
+        informationToBeChanged.segment = informationToBeChanged.segment;
+        informationToBeChanged.color = "text-red-600";
+      });
     } else {
+      updateInformationVisibleToTheUser((draft) => {
+        let informationToBeChanged =
+          draft[indexOfTheGraphemeCurrentlyChecked.current];
+
+        informationToBeChanged.segment = informationToBeChanged.segment;
+        informationToBeChanged.color = "text-black";
+      });
     }
   };
 
@@ -72,6 +93,20 @@ export default function App() {
         ref={inputRef}
         onChange={handleUserTyping}
       ></input>
+      <div className="flex flex-wrap w-full px-5 h-20 border-gray-700 text-xl">
+        {informationVisibileToTheUser.map((infoObj) => {
+          return (
+            <div
+              key={crypto.randomUUID()}
+              className={`${infoObj.color} ${
+                infoObj.segment === " " ? "mr-2" : "mr-0"
+              }`}
+            >
+              {infoObj.segment}
+            </div>
+          );
+        })}
+      </div>
     </>
   );
 }
