@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, ChangeEvent } from "react";
+import { useImmer } from "use-immer";
 
 const storedString =
   "ওহে বিশ্ব, কি খবর? বাংলা, বিহার ও ওডিশার সর্বশেষ স্বাধীন নবাব সিরাজউদ্দৌলার পতন হয় আজকের দিনে। আজ ২৩ জুন, পলাশী যুদ্ধ দিবস। নবাবের প্রধান সেনাপতি মীর জাফরের বিশ্বাসঘাতকতায় পলাশীর প্রান্তরে হেরে যায় তাঁর বাহিনী, জয় পায় লর্ড ক্লাইভের নেতৃত্বাধীন ব্রিটিশ বাহিনী। এর মধ্য দিয়ে ভারতীয় উপমহাদেশে ব্রিটিশ ইস্ট ইন্ডিয়া কোম্পানির শাসন শুরু হয়। ২০০ বছরের ব্রিটিশ ঔপনিবেশিক শাসনের গোড়াপত্তন ঘটে।";
@@ -28,9 +29,49 @@ export default function App() {
     inputRef.current?.focus();
   }, []);
 
+  const [userInput, setUserInput] = useState("");
+
+  const indexOfTheGraphemeCurrentlyChecked = useRef(0);
+  const checkUserInputChars = (userInputGraphemes: Array<string>) => {
+    const graphemeToBeCheckedFromStoredStr =
+      graphemesFromStoredStr[indexOfTheGraphemeCurrentlyChecked.current];
+    const graphemeToBeCheckedFromUserInput =
+      userInputGraphemes[indexOfTheGraphemeCurrentlyChecked.current];
+
+    if (
+      graphemeToBeCheckedFromUserInput.length >
+      graphemeToBeCheckedFromStoredStr.length
+    ) {
+      return false;
+    } else if (
+      graphemeToBeCheckedFromStoredStr === graphemeToBeCheckedFromUserInput
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
+    setUserInput(e.target.value);
+
+    const userInputGraphemes = segmentToChar(e.target.value);
+    const userInputGraphemesCount = userInputGraphemes.length;
+    indexOfTheGraphemeCurrentlyChecked.current = userInputGraphemesCount - 1;
+
+    const isUserInputCorrect = checkUserInputChars(userInputGraphemes);
+    if (!isUserInputCorrect) {
+    } else {
+    }
+  };
+
   return (
     <>
-      <input inputMode="text" ref={inputRef}></input>
+      <input
+        inputMode="text"
+        ref={inputRef}
+        onChange={handleUserTyping}
+      ></input>
     </>
   );
 }
