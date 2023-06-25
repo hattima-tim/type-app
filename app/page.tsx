@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef, ChangeEvent } from "react";
 import { useImmer } from "use-immer";
 
-const storedString = "যুদ্ধ";
+const storedString = "যুদ্ধ হবেরে খেলা হবেরে";
 
 const segmentToChar = (str: string) => {
   const charSegmenter = new Intl.Segmenter("bn", { granularity: "grapheme" });
@@ -31,20 +31,21 @@ export default function App() {
   const [userInput, setUserInput] = useState("");
 
   const indexOfTheGraphemeCurrentlyChecked = useRef(0);
-  const checkUserInputChars = (userInputGraphemes: Array<string>) => {
-    const graphemeToBeCheckedFromStoredStr =
-      graphemesFromStoredStr[indexOfTheGraphemeCurrentlyChecked.current];
-    const graphemeToBeCheckedFromUserInput =
-      userInputGraphemes[indexOfTheGraphemeCurrentlyChecked.current];
+  const checkUserInputChars = (lastInputWordChars: Array<string>) => {
+    const wordBeingChecked =
+      wordsFromStoredStr[indexOfTheWordCurrentlyChecked.current];
+    const charsOfWordBeingChecked = segmentToChar(wordBeingChecked);
 
-    if (
-      graphemeToBeCheckedFromUserInput.length >
-      graphemeToBeCheckedFromStoredStr.length
-    ) {
-      return false;
-    } else if (
-      graphemeToBeCheckedFromStoredStr === graphemeToBeCheckedFromUserInput
-    ) {
+    // return if user types too much
+    if (lastInputWordChars.length > charsOfWordBeingChecked.length)
+      return "user exceeded word limit";
+
+    const charToBeCheckedFromStoredStr =
+      charsOfWordBeingChecked[indexOfTheGraphemeCurrentlyChecked.current];
+    const charToBeCheckedFromUserInput =
+      lastInputWordChars[indexOfTheGraphemeCurrentlyChecked.current];
+
+    if (charToBeCheckedFromStoredStr === charToBeCheckedFromUserInput) {
       return true;
     }
 
@@ -53,37 +54,39 @@ export default function App() {
 
   const [informationVisibileToTheUser, updateInformationVisibleToTheUser] =
     useImmer(
-      graphemesFromStoredStr.map((s) => {
-        return { segment: s, color: "text-gray-500" };
+      wordsFromStoredStr.map((word) => {
+        return segmentToChar(word).map((char) => {
+          return { segment: char, color: "text-gray-500" };
+        });
       })
     );
 
   const indexOfTheWordCurrentlyChecked = useRef(0);
-  const checkUserInputWords = (userInputWords: Array<string>) => {
-    indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
+  // const checkUserInputWords = (userInputWords: Array<string>) => {
+  //   indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
 
-    const wordToBeCheckedFromStoredStr =
-      wordsFromStoredStr[indexOfTheWordCurrentlyChecked.current];
-    const wordToBeCheckedFromUserInput =
-      userInputWords[indexOfTheWordCurrentlyChecked.current];
+  //   const wordToBeCheckedFromStoredStr =
+  //     wordsFromStoredStr[indexOfTheWordCurrentlyChecked.current];
+  //   const wordToBeCheckedFromUserInput =
+  //     userInputWords[indexOfTheWordCurrentlyChecked.current];
 
-    if (wordToBeCheckedFromStoredStr === wordToBeCheckedFromUserInput) {
-      const checkedWordChars = segmentToChar(wordToBeCheckedFromStoredStr);
-      const wordLength = checkedWordChars.length - 1;
+  //   if (wordToBeCheckedFromStoredStr === wordToBeCheckedFromUserInput) {
+  //     const checkedWordChars = segmentToChar(wordToBeCheckedFromStoredStr);
+  //     const wordLength = checkedWordChars.length - 1;
 
-      const from = indexOfTheGraphemeCurrentlyChecked.current - wordLength;
-      const to = indexOfTheGraphemeCurrentlyChecked.current + 1;
+  //     const from = indexOfTheGraphemeCurrentlyChecked.current - wordLength;
+  //     const to = indexOfTheGraphemeCurrentlyChecked.current + 1;
 
-      updateInformationVisibleToTheUser((draft) => {
-        // Update the information directly instead of using splice
-        // using splice was causing bugs
-        for (let i = from; i < to; i++) {
-          draft[i].segment = checkedWordChars[i - from];
-          draft[i].color = "text-black";
-        }
-      });
-    }
-  };
+  //     updateInformationVisibleToTheUser((draft) => {
+  //       // Update the information directly instead of using splice
+  //       // using splice was causing bugs
+  //       for (let i = from; i < to; i++) {
+  //         draft[i].segment = checkedWordChars[i - from];
+  //         draft[i].color = "text-black";
+  //       }
+  //     });
+  //   }
+  // };
 
   const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
     // prevent errors in the case when user clicks backspace even if there is no
@@ -92,28 +95,34 @@ export default function App() {
 
     setUserInput(e.target.value);
 
-    const userInputGraphemes = segmentToChar(e.target.value);
-    const userInputGraphemesCount = userInputGraphemes.length;
+    const userInputWords = segmentToWord(e.target.value);
+    indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
+
+    const lastInputWord = userInputWords[userInputWords.length - 1];
+    const lastInputWordChars = segmentToChar(lastInputWord);
+    indexOfTheGraphemeCurrentlyChecked.current = lastInputWordChars.length - 1;
 
     // return the func if user input exceeds the stored string value
     // this will prevent errors
-    if (userInputGraphemesCount > graphemesFromStoredStr.length) return;
+    if (userInputWords.length > wordsFromStoredStr.length) return;
 
-    indexOfTheGraphemeCurrentlyChecked.current = userInputGraphemesCount - 1;
-
-    const isUserInputCorrect = checkUserInputChars(userInputGraphemes);
+    const isUserInputCorrect = checkUserInputChars(lastInputWordChars);
+    if (isUserInputCorrect === "user exceeded word limit") return;
     if (!isUserInputCorrect) {
       updateInformationVisibleToTheUser((draft) => {
         let informationToBeChanged =
-          draft[indexOfTheGraphemeCurrentlyChecked.current];
+          draft[indexOfTheWordCurrentlyChecked.current][
+            indexOfTheGraphemeCurrentlyChecked.current
+          ];
 
-        informationToBeChanged.segment = informationToBeChanged.segment;
         informationToBeChanged.color = "text-red-600";
       });
     } else {
       updateInformationVisibleToTheUser((draft) => {
         let informationToBeChanged =
-          draft[indexOfTheGraphemeCurrentlyChecked.current];
+          draft[indexOfTheWordCurrentlyChecked.current][
+            indexOfTheGraphemeCurrentlyChecked.current
+          ];
 
         informationToBeChanged.segment = informationToBeChanged.segment;
         informationToBeChanged.color = "text-black";
@@ -123,8 +132,8 @@ export default function App() {
     // the following code is necessary for when, a/multiple char in a word
     // incorrectly typed but autocompletion of the whole word makes it
     // correct. So, the following code checks if the whole word is correct
-    const userInputWords = segmentToWord(e.target.value);
-    checkUserInputWords(userInputWords);
+    // const userInputWords = segmentToWord(e.target.value);
+    // checkUserInputWords(userInputWords);
   };
 
   return (
@@ -135,17 +144,19 @@ export default function App() {
         onChange={handleUserTyping}
       ></input>
       <div className="flex flex-wrap w-full px-5 h-20 border-gray-700 text-xl">
-        {informationVisibileToTheUser.map((infoObj) => {
-          return (
-            <div
-              key={crypto.randomUUID()}
-              className={`${infoObj.color} ${
-                infoObj.segment === " " ? "mr-2" : "mr-0"
-              }`}
-            >
-              {infoObj.segment}
-            </div>
-          );
+        {informationVisibileToTheUser.map((charArr) => {
+          return charArr.map((char) => {
+            return (
+              <div
+                key={crypto.randomUUID()}
+                className={`${char.color} ${
+                  char.segment === " " ? "mr-2" : "mr-0"
+                }`}
+              >
+                {char.segment}
+              </div>
+            );
+          });
         })}
       </div>
     </>
