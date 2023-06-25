@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef, ChangeEvent } from "react";
+import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { useImmer } from "use-immer";
 
-const storedString = "যুদ্ধ হবেরে খেলা হবেরে";
+const storedString =
+  "ভাড়াটে যোদ্ধা সরবরাহকারী প্রতিষ্ঠান ভাগনার গ্রুপের প্রধান ইয়েভগেনি প্রিগোশিন বেলারুশে যাচ্ছেন। রাশিয়ার রাষ্ট্রীয় গণমাধ্যমের খবরে বলা হয়েছে, বিদ্রোহের কারণে তাঁর বিরুদ্ধে যেসব অভিযোগ আনা হয়েছে সেগুলো তুলে নেওয়া হবে।";
 
 const segmentToChar = (str: string) => {
   const charSegmenter = new Intl.Segmenter("bn", { granularity: "grapheme" });
@@ -11,7 +12,6 @@ const segmentToChar = (str: string) => {
 
   return graphemes;
 };
-const graphemesFromStoredStr = segmentToChar(storedString);
 
 const segmentToWord = (str: string) => {
   const wordSegmenter = new Intl.Segmenter("bn", { granularity: "word" });
@@ -62,31 +62,23 @@ export default function App() {
     );
 
   const indexOfTheWordCurrentlyChecked = useRef(0);
-  // const checkUserInputWords = (userInputWords: Array<string>) => {
-  //   indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
+  const markTheWordAsRight = (wordBeingChecked: string) => {
+    const checkedWordChars = segmentToChar(wordBeingChecked);
 
-  //   const wordToBeCheckedFromStoredStr =
-  //     wordsFromStoredStr[indexOfTheWordCurrentlyChecked.current];
-  //   const wordToBeCheckedFromUserInput =
-  //     userInputWords[indexOfTheWordCurrentlyChecked.current];
+    const from = 0;
+    const to = indexOfTheGraphemeCurrentlyChecked.current + 1;
 
-  //   if (wordToBeCheckedFromStoredStr === wordToBeCheckedFromUserInput) {
-  //     const checkedWordChars = segmentToChar(wordToBeCheckedFromStoredStr);
-  //     const wordLength = checkedWordChars.length - 1;
+    updateInformationVisibleToTheUser((draft) => {
+      // Update the information directly instead of using splice
+      // using splice was causing bugs
+      const targetWordCharArray = draft[indexOfTheWordCurrentlyChecked.current];
 
-  //     const from = indexOfTheGraphemeCurrentlyChecked.current - wordLength;
-  //     const to = indexOfTheGraphemeCurrentlyChecked.current + 1;
-
-  //     updateInformationVisibleToTheUser((draft) => {
-  //       // Update the information directly instead of using splice
-  //       // using splice was causing bugs
-  //       for (let i = from; i < to; i++) {
-  //         draft[i].segment = checkedWordChars[i - from];
-  //         draft[i].color = "text-black";
-  //       }
-  //     });
-  //   }
-  // };
+      for (let i = from; i < to; i++) {
+        targetWordCharArray[i].segment = checkedWordChars[i];
+        targetWordCharArray[i].color = "text-black";
+      }
+    });
+  };
 
   const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
     // prevent errors in the case when user clicks backspace even if there is no
@@ -132,8 +124,11 @@ export default function App() {
     // the following code is necessary for when, a/multiple char in a word
     // incorrectly typed but autocompletion of the whole word makes it
     // correct. So, the following code checks if the whole word is correct
-    // const userInputWords = segmentToWord(e.target.value);
-    // checkUserInputWords(userInputWords);
+    const wordBeingChecked =
+      wordsFromStoredStr[indexOfTheWordCurrentlyChecked.current];
+    if (lastInputWord === wordBeingChecked) {
+      markTheWordAsRight(wordBeingChecked);
+    }
   };
 
   return (
