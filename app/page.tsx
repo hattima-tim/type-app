@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { useImmer } from "use-immer";
+import { v4 as uuidv4 } from "uuid";
+// use uuid package instead of crypto,randomUUID() to create similar
+// environment for both testing and production. To use crypto in nodejs you have to
+// import the crypto package, but the package does not work in browser
 import { segmentToChar } from "./inputHandlers/segmenter";
 import { segmentToWord } from "./inputHandlers/segmenter";
 import { checkUserInputChars } from "./inputHandlers/inputCheck";
@@ -26,7 +30,11 @@ export default function App() {
     useImmer(
       wordsFromStoredStr.map((word) => {
         return segmentToChar(word).map((char) => {
-          return { segment: char, color: "text-gray-500" };
+          return {
+            id: uuidv4(),
+            segment: char,
+            color: "text-gray-500",
+          };
         });
       })
     );
@@ -90,7 +98,7 @@ export default function App() {
           return charArr.map((char) => {
             return (
               <div
-                key={crypto.randomUUID()}
+                key={char.id}
                 className={`${char.color} ${
                   char.segment === " " ? "mr-2" : "mr-0"
                 }`}
