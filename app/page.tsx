@@ -15,9 +15,16 @@ import handleInputCheckResult from "./inputHandlers/handleInputCheckResult";
 const storedString =
   "ভাড়াটে যোদ্ধা সরবরাহকারী প্রতিষ্ঠান ভাগনার গ্রুপের প্রধান ইয়েভগেনি প্রিগোশিন বেলারুশে যাচ্ছেন। রাশিয়ার রাষ্ট্রীয় গণমাধ্যমের খবরে বলা হয়েছে, বিদ্রোহের কারণে তাঁর বিরুদ্ধে যেসব অভিযোগ আনা হয়েছে সেগুলো তুলে নেওয়া হবে।";
 
-const wordsFromStoredStr = segmentToWord(storedString);
+let wordsFromStoredStr = segmentToWord(storedString);
 
-export default function App() {
+export default function App({
+  testStringForTesting,
+}: {
+  testStringForTesting?: string;
+}) {
+  if (testStringForTesting)
+    wordsFromStoredStr = segmentToWord(testStringForTesting);
+
   const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     inputRef.current?.focus();
