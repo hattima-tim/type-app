@@ -21,9 +21,26 @@ test("typing wrong characters makes corresponding test characters red", async ()
   const inputField = screen.getByRole("textbox");
   await user.type(inputField, "hello");
 
-  const firstTestCharacterDiv = screen.getByText("আ");
-  const secondTestCharacterDiv = screen.getByText("ম");
+  const firstTestCharacter = screen.getByText("আ");
+  const secondTestCharacter = screen.getByText("ম");
 
-  expect(firstTestCharacterDiv).toHaveClass("text-red-600");
-  expect(secondTestCharacterDiv).toHaveClass("text-red-600");
+  expect(firstTestCharacter).toHaveClass("text-red-600");
+  expect(secondTestCharacter).toHaveClass("text-red-600");
+});
+
+test("typing correct chars makes corresponding test chars black from gray", async () => {
+  render(<App testStringForTesting="আমরা" />);
+
+  const user = userEvent.setup();
+
+  const inputField = screen.getByRole("textbox");
+  await user.type(inputField, "আমরা");
+
+  const firstTestCharacter = screen.getByText("আ");
+  const secondTestCharacter = screen.getByText("ম");
+  const thirdTestCharacter = screen.getByText("রা");
+
+  expect(firstTestCharacter).toHaveClass("text-black");
+  expect(secondTestCharacter).toHaveClass("text-black");
+  expect(thirdTestCharacter).toHaveClass("text-black");
 });
