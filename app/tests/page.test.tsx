@@ -44,3 +44,24 @@ test("typing correct chars makes corresponding test chars black from gray", asyn
   expect(secondTestCharacter).toHaveClass("text-black");
   expect(thirdTestCharacter).toHaveClass("text-black");
 });
+
+test("if user types more than the word he is typing against it would not affect the next word", async () => {
+  render(<App testStringForTesting="তোতা পাখি" />);
+
+  const user = userEvent.setup();
+
+  const inputField = screen.getByRole("textbox");
+  await user.type(inputField, "তোতাআআআআ");
+
+  const firstTestCharacterFromFirstWord = screen.getByText("তো");
+  const secondTestCharacterFromFirstWord = screen.getByText("তা");
+
+  const firstTestCharacterFromSecondWord = screen.getByText("পা");
+  const secondTestCharacterFromSecondWord = screen.getByText("খি");
+
+  expect(firstTestCharacterFromFirstWord).toHaveClass("text-black");
+  expect(secondTestCharacterFromFirstWord).toHaveClass("text-black");
+
+  expect(firstTestCharacterFromSecondWord).toHaveClass("text-gray-500");
+  expect(secondTestCharacterFromSecondWord).toHaveClass("text-gray-500");
+});
