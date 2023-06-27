@@ -46,9 +46,29 @@ export default function App({
       })
     );
 
+  const [timeRemaining, setTimeRemaining] = useState(60);
+
+  let timer = useRef<ReturnType<typeof setInterval>>();
+  const handleTimer = () => {
+    if (timeRemaining === 60) {
+      timer.current = setInterval(() => {
+        setTimeRemaining((prevState) => prevState - 1);
+      }, 1000);
+    }
+  };
+
+  useEffect(() => {
+    if (timeRemaining === 0) {
+      clearInterval(timer.current);
+    }
+  }, [timeRemaining]);
+
+  // Rest of your component
   const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
     // prevent errors in the case when user clicks backspace even if there is no
     // char/word in the input field
+    handleTimer();
+
     if (e.target.value === "") return;
     setUserInput(e.target.value);
 
@@ -95,6 +115,7 @@ export default function App({
 
   return (
     <>
+      <h1>{timeRemaining}</h1>
       <input
         inputMode="text"
         ref={inputRef}
