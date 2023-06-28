@@ -50,7 +50,7 @@ export default function App({
 
   let timer = useRef<ReturnType<typeof setInterval>>();
   const handleTimer = () => {
-    if (timeRemaining === 60) {
+    if (timer.current === undefined) {
       timer.current = setInterval(() => {
         setTimeRemaining((prevState) => prevState - 1);
       }, 1000);
