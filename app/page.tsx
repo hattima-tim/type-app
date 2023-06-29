@@ -13,7 +13,7 @@ import { markTheWordAsRight } from "./inputHandlers/markWord";
 import handleInputCheckResult from "./inputHandlers/handleInputCheckResult";
 
 const storedString =
-  "ভাড়াটে যোদ্ধা সরবরাহকারী প্রতিষ্ঠান ভাগনার গ্রুপের প্রধান ইয়েভগেনি প্রিগোশিন বেলারুশে যাচ্ছেন। রাশিয়ার রাষ্ট্রীয় গণমাধ্যমের খবরে বলা হয়েছে, বিদ্রোহের কারণে তাঁর বিরুদ্ধে যেসব অভিযোগ আনা হয়েছে সেগুলো তুলে নেওয়া হবে।";
+  "আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা আমরা";
 
 let wordsFromStoredStr = segmentToWord(storedString);
 
@@ -57,11 +57,63 @@ export default function App({
     }
   };
 
+  const [wpm, setWpm] = useState(0);
+
+  const calculateWPM = ({
+    totalCorrectChars,
+    totalIncorrectChars,
+  }: {
+    totalCorrectChars: number;
+    totalIncorrectChars: number;
+  }) => {
+    const netWpm = (totalCorrectChars / 5 - totalIncorrectChars) / 1;
+
+    return netWpm;
+  };
+
   useEffect(() => {
     if (timeRemaining === 0) {
       clearInterval(timer.current);
+
+      // the following totalTypedCharsInfo related code is not in a seperate
+      // function because if I do so, useEffect hook asks to add it
+      // in the dependency array. Adding a func in the array makes the hook
+      // run on every render
+      const totalTypedCharsInfo = informationVisibileToTheUser.reduce(
+        (prev, current) => {
+          const correctCharsObjs = current.filter(
+            (char) => char.color === "text-black"
+          );
+          const correctCharsStrArr = correctCharsObjs.map((charObj) => {
+            return charObj.segment;
+          });
+          const correctCharsStr = correctCharsStrArr.join("");
+          // this is done to calculate each individual char typed. For example,
+          // the length of তুমি is 4, not 2
+
+          const totalCorrectChars =
+            prev.totalCorrectChars + correctCharsStr.length;
+
+          const incorrectCharsObjs = current.filter(
+            (char) => char.color === "text-red-600"
+          );
+          const incorrectCharsStrArr = incorrectCharsObjs.map((charObj) => {
+            return charObj.segment;
+          });
+          const incorrectCharsStr = incorrectCharsStrArr.join("");
+
+          const totalIncorrectChars =
+            prev.totalIncorrectChars + incorrectCharsStr.length;
+
+          return { totalCorrectChars, totalIncorrectChars };
+        },
+        { totalCorrectChars: 0, totalIncorrectChars: 0 }
+      );
+
+      const calculatedWPM = Math.round(calculateWPM(totalTypedCharsInfo));
+      setWpm(calculatedWPM);
     }
-  }, [timeRemaining]);
+  }, [timeRemaining, informationVisibileToTheUser]);
 
   // Rest of your component
   const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
@@ -116,6 +168,7 @@ export default function App({
   return (
     <>
       <h1>{timeRemaining}</h1>
+      <h1>WPM:{wpm}</h1>
       <input
         inputMode="text"
         ref={inputRef}
