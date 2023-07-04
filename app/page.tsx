@@ -1,8 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Home() {
-  const books = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+async function getAllBooksData() {
+  const res = await fetch(`http://localhost:3000/books`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch data.");
+  }
+
+  return res.json();
+}
+
+interface Book {
+  id: string;
+  auhtor: string;
+  bookName: string;
+  imgUrl: string;
+  pages: string[];
+}
+
+export default async function Home() {
+  const books = (await getAllBooksData()) || [];
   return (
     <div>
       <nav className="flex justify-between mx-8 mt-4">
@@ -34,20 +52,20 @@ export default function Home() {
         // show a grid of books with picture, name, page number with a card and a link//
       }
       <div className="grid grid-cols-3 gap-4">
-        {books.map((book) => {
+        {books.map((book: Book) => {
           return (
-            <Link key={book} href={`/books/${book}`}>
+            <Link key={book.id} href={`/books/${book.bookName}`}>
               <div className="bg-white flex shadow-lg rounded-lg overflow-hidden">
                 <Image
-                  src="https://fakeimg.pl/200x200"
+                  src={book.imgUrl}
                   width={200}
                   height={200}
                   alt="typing test"
                 />
-                <div className="p-4 flex">
-                  <h3 className="font-bold text-xl mb-2">Book Name</h3>
+                <div className="flex">
+                  <h3 className="font-bold text-xl mb-2">{book.bookName}</h3>
                   <p className="text-gray-700 self-end text-base">
-                    Page Number
+                    {book.pages.length} pages
                   </p>
                 </div>
               </div>
