@@ -1,25 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-
-async function getAllBooksData() {
-  const res = await fetch(
-    `https://3000-hattimatim-typeappserve-25257k7i7he.ws-us101.gitpod.io/books`
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch data.");
-  }
-
-  return res.json();
-}
-
-interface Book {
-  id: string;
-  auhtor: string;
-  bookName: string;
-  imgUrl: string;
-  pages: string[];
-}
+import { getAllBooksData } from "./bookApi";
 
 export default async function Home() {
   const books = (await getAllBooksData()) || [];
@@ -54,7 +35,7 @@ export default async function Home() {
         // show a grid of books with picture, name, page number with a card and a link//
       }
       <div className="grid grid-cols-3 gap-4">
-        {books.map((book: Book) => {
+        {books.map((book) => {
           return (
             <Link key={book.id} href={`/books/${book.id}`}>
               <div className="bg-white flex shadow-lg rounded-lg overflow-hidden">
