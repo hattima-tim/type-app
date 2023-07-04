@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 async function getAllBooksData() {
-  const res = await fetch(`http://localhost:3000/books`);
+  const res = await fetch(
+    `https://3000-hattimatim-typeappserve-25257k7i7he.ws-us101.gitpod.io/books`
+  );
 
   if (!res.ok) {
     throw new Error("Failed to fetch data.");
@@ -54,7 +56,7 @@ export default async function Home() {
       <div className="grid grid-cols-3 gap-4">
         {books.map((book: Book) => {
           return (
-            <Link key={book.id} href={`/books/${book.bookName}`}>
+            <Link key={book.id} href={`/books/${book.id}`}>
               <div className="bg-white flex shadow-lg rounded-lg overflow-hidden">
                 <Image
                   src={book.imgUrl}
