@@ -6,16 +6,6 @@ export default async function Home() {
   const books = (await getAllBooksData()) || [];
   return (
     <div>
-      <nav className="flex justify-between mx-8 mt-4">
-        <Link href="/">
-          <h1>Typing Test App</h1>
-        </Link>
-        <div className="flex gap-4">
-          <Link href="/leaderboard">Leaderboard</Link>
-          <Link href="/about">About</Link>
-        </div>
-      </nav>
-
       <div className="flex flex-col items-center justify-center min-h-screen py-2">
         <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
           <h1 className="text-6xl font-bold">Welcome to Typing Test App</h1>
