@@ -1,7 +1,5 @@
 async function getBookData(bookId: string) {
-  const res = await fetch(
-    `https://3000-hattimatim-typeappserve-25257k7i7he.ws-us101.gitpod.io/books/${bookId}`
-  );
+  const res = await fetch(`http://localhost:3000/books/${bookId}`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch data.");
@@ -19,9 +17,7 @@ interface Book {
 }
 
 async function getAllBooksData(): Promise<Book[]> {
-  const res = await fetch(
-    `https://3000-hattimatim-typeappserve-25257k7i7he.ws-us101.gitpod.io/books`
-  );
+  const res = await fetch(`http://localhost:3000.io/books`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch data.");
@@ -35,7 +31,7 @@ async function getPageData(
   pageNumber: number
 ): Promise<string> {
   const res = await fetch(
-    `https://3000-hattimatim-typeappserve-25257k7i7he.ws-us101.gitpod.io/books/${bookId}/pages/${pageNumber}`
+    `http://localhost:3000/books/${bookId}/pages/${pageNumber}`
   );
 
   if (!res.ok) {
