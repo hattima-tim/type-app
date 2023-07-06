@@ -17,7 +17,7 @@ interface Book {
 }
 
 async function getAllBooksData(): Promise<Book[]> {
-  const res = await fetch(`http://localhost:3000.io/books`);
+  const res = await fetch(`http://localhost:3000/books`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch data.");
