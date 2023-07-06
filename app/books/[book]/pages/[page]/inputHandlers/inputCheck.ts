@@ -11,5 +11,8 @@ export const checkUserInputChars = (
   const charToBeCheckedFromUserInput =
     lastInputWordChars[indexOfTheGraphemeCurrentlyChecked];
 
-  return charToBeCheckedFromStoredStr === charToBeCheckedFromUserInput;
+  return (
+    charToBeCheckedFromStoredStr.normalize("NFC") ===
+    charToBeCheckedFromUserInput.normalize("NFC")
+  );
 };
