@@ -13,6 +13,7 @@ import { checkUserInputChars } from "./inputHandlers/inputCheck";
 import { markTheWordAsRight } from "./inputHandlers/markWord";
 import handleInputCheckResult from "./inputHandlers/handleInputCheckResult";
 import { getPageData } from "@/app/bookApi";
+import handleBackspace from "./inputHandlers/handleBackspace";
 
 export default function Page() {
   const params = useParams();
@@ -120,23 +121,62 @@ export default function Page() {
     }
   }, [timeRemaining, informationVisibileToTheUser]);
 
-  // Rest of your component
+  const wordBeingChecked = useRef("");
+  const charsOfWordBeingChecked = useRef<string[]>([]);
+
   const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
-    // prevent errors in the case when user clicks backspace even if there is no
-    // char/word in the input field
     handleTimer();
 
-    if (e.target.value === "") return;
+    // prevent errors in the case when user clicks backspace even if there is no
+    // char/word in the input field
+    if (e.target.value === "" && indexOfTheGraphemeCurrentlyChecked.current < 0)
+      return;
     setUserInput(e.target.value);
 
     const userInputWords = segmentToWord(e.target.value);
-    indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
-    const wordBeingChecked =
-      wordsFromStoredStr.current[indexOfTheWordCurrentlyChecked.current];
-    const charsOfWordBeingChecked = segmentToChar(wordBeingChecked);
-
     const lastInputWord = userInputWords[userInputWords.length - 1];
     const lastInputWordChars = segmentToChar(lastInputWord);
+
+    const weCameFromTheFirstCharacterOfAWord =
+      0 === indexOfTheGraphemeCurrentlyChecked.current;
+    const didWeGetSpaceWhileBackspacing =
+      lastInputWordChars[0] === " " && weCameFromTheFirstCharacterOfAWord;
+
+    const weCameFromTheLastCharOfAWord =
+      charsOfWordBeingChecked.current.length - 1 ===
+      indexOfTheGraphemeCurrentlyChecked.current;
+    const didWeGetSpaceWhileForwarding =
+      lastInputWordChars[0] === " " && weCameFromTheLastCharOfAWord;
+
+    if (
+      (!didWeGetSpaceWhileForwarding || didWeGetSpaceWhileBackspacing) &&
+      (userInputWords.length === indexOfTheWordCurrentlyChecked.current ||
+        lastInputWordChars.length ===
+          indexOfTheGraphemeCurrentlyChecked.current)
+    ) {
+      const copyIndexOfTheGraphemeCurrentlyChecked = {
+        ...indexOfTheGraphemeCurrentlyChecked,
+      };
+      const copyIndexOfTheWordCurrentlyChecked = {
+        ...indexOfTheWordCurrentlyChecked,
+      };
+
+      handleBackspace(
+        updateInformationVisibleToTheUser,
+        copyIndexOfTheGraphemeCurrentlyChecked,
+        copyIndexOfTheWordCurrentlyChecked
+      );
+      indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
+      indexOfTheGraphemeCurrentlyChecked.current =
+        lastInputWordChars.length - 1;
+      return;
+    }
+
+    indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
+    wordBeingChecked.current =
+      wordsFromStoredStr.current[indexOfTheWordCurrentlyChecked.current];
+    charsOfWordBeingChecked.current = segmentToChar(wordBeingChecked.current);
+
     indexOfTheGraphemeCurrentlyChecked.current = lastInputWordChars.length - 1;
 
     // return from the func if user input exceeds the stored string value
@@ -145,7 +185,7 @@ export default function Page() {
 
     const isUserInputCorrect = checkUserInputChars(
       lastInputWordChars,
-      charsOfWordBeingChecked,
+      charsOfWordBeingChecked.current,
       indexOfTheGraphemeCurrentlyChecked.current
     );
     if (isUserInputCorrect === "user exceeded word limit") return;
@@ -160,9 +200,9 @@ export default function Page() {
     // the following code is necessary for when, a/multiple char in a word
     // incorrectly typed but autocompletion of the whole word makes it
     // correct. So, the following code checks if the whole word is correct
-    if (lastInputWord === wordBeingChecked) {
+    if (lastInputWord === wordBeingChecked.current) {
       markTheWordAsRight(
-        wordBeingChecked,
+        wordBeingChecked.current,
         indexOfTheGraphemeCurrentlyChecked,
         updateInformationVisibleToTheUser,
         indexOfTheWordCurrentlyChecked
