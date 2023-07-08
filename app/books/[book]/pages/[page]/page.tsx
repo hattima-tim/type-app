@@ -137,10 +137,11 @@ export default function Page() {
     const lastInputWordChars = segmentToChar(lastInputWord);
 
     if (lastInputWordChars.length < charsOfWordBeingChecked.current.length) {
-      // length-1 because, when user starts deleting a word bigger than the wordBeingChecked and
+      // because, when user starts deleting a word bigger than the wordBeingChecked and
       // comes to a point a where both the above lengths are equal, the value of the
-      // indexOfTheGraphemeCurrentlyChecked.current then would be equal to the length. But there is nothing
-      // in the length index. So, the code should not execute when the lengths are equal.
+      // indexOfTheGraphemeCurrentlyChecked.current then would be equal to the lastInputWordChars length.
+      // But there is nothing in that index.
+      // So, the code should not execute when the lengths are equal.
       const weCameFromTheFirstCharacterOfAWord =
         0 === indexOfTheGraphemeCurrentlyChecked.current;
       const didWeGetSpaceWhileBackspacing =
