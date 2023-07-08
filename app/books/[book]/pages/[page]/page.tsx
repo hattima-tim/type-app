@@ -127,49 +127,54 @@ export default function Page() {
   const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
     handleTimer();
 
-    // prevent errors in the case when user clicks backspace even if there is no
-    // char/word in the input field
-    if (e.target.value === "" && indexOfTheGraphemeCurrentlyChecked.current < 0)
-      return;
     setUserInput(e.target.value);
 
     const userInputWords = segmentToWord(e.target.value);
-    const lastInputWord = userInputWords[userInputWords.length - 1];
+    const lastInputWord =
+      userInputWords.length === 0
+        ? ""
+        : userInputWords[userInputWords.length - 1]; //otherwise lastInpuWord was getting undefined
     const lastInputWordChars = segmentToChar(lastInputWord);
 
-    const weCameFromTheFirstCharacterOfAWord =
-      0 === indexOfTheGraphemeCurrentlyChecked.current;
-    const didWeGetSpaceWhileBackspacing =
-      lastInputWordChars[0] === " " && weCameFromTheFirstCharacterOfAWord;
+    if (lastInputWordChars.length < charsOfWordBeingChecked.current.length) {
+      // length-1 because, when user starts deleting a word bigger than the wordBeingChecked and
+      // comes to a point a where both the above lengths are equal, the value of the
+      // indexOfTheGraphemeCurrentlyChecked.current then would be equal to the length. But there is nothing
+      // in the length index. So, the code should not execute when the lengths are equal.
+      const weCameFromTheFirstCharacterOfAWord =
+        0 === indexOfTheGraphemeCurrentlyChecked.current;
+      const didWeGetSpaceWhileBackspacing =
+        lastInputWordChars[0] === " " && weCameFromTheFirstCharacterOfAWord;
 
-    const weCameFromTheLastCharOfAWord =
-      charsOfWordBeingChecked.current.length - 1 ===
-      indexOfTheGraphemeCurrentlyChecked.current;
-    const didWeGetSpaceWhileForwarding =
-      lastInputWordChars[0] === " " && weCameFromTheLastCharOfAWord;
+      const weCameFromTheLastCharOfAWord =
+        charsOfWordBeingChecked.current.length - 1 ===
+        indexOfTheGraphemeCurrentlyChecked.current;
+      const didWeGetSpaceWhileForwarding =
+        lastInputWordChars[0] === " " && weCameFromTheLastCharOfAWord;
 
-    if (
-      (!didWeGetSpaceWhileForwarding || didWeGetSpaceWhileBackspacing) &&
-      (userInputWords.length === indexOfTheWordCurrentlyChecked.current ||
-        lastInputWordChars.length ===
-          indexOfTheGraphemeCurrentlyChecked.current)
-    ) {
-      const copyIndexOfTheGraphemeCurrentlyChecked = {
-        ...indexOfTheGraphemeCurrentlyChecked,
-      };
-      const copyIndexOfTheWordCurrentlyChecked = {
-        ...indexOfTheWordCurrentlyChecked,
-      };
+      if (
+        (!didWeGetSpaceWhileForwarding || didWeGetSpaceWhileBackspacing) &&
+        (userInputWords.length === indexOfTheWordCurrentlyChecked.current ||
+          lastInputWordChars.length ===
+            indexOfTheGraphemeCurrentlyChecked.current)
+      ) {
+        const copyIndexOfTheGraphemeCurrentlyChecked = {
+          ...indexOfTheGraphemeCurrentlyChecked,
+        };
+        const copyIndexOfTheWordCurrentlyChecked = {
+          ...indexOfTheWordCurrentlyChecked,
+        };
 
-      handleBackspace(
-        updateInformationVisibleToTheUser,
-        copyIndexOfTheGraphemeCurrentlyChecked,
-        copyIndexOfTheWordCurrentlyChecked
-      );
-      indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
-      indexOfTheGraphemeCurrentlyChecked.current =
-        lastInputWordChars.length - 1;
-      return;
+        handleBackspace(
+          updateInformationVisibleToTheUser,
+          copyIndexOfTheGraphemeCurrentlyChecked,
+          copyIndexOfTheWordCurrentlyChecked
+        );
+        indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
+        indexOfTheGraphemeCurrentlyChecked.current =
+          lastInputWordChars.length - 1;
+        return;
+      }
     }
 
     indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
