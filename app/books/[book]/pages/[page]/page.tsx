@@ -206,7 +206,10 @@ export default function Page() {
     // the following code is necessary for when, a/multiple char in a word
     // incorrectly typed but autocompletion of the whole word makes it
     // correct. So, the following code checks if the whole word is correct
-    if (lastInputWord === wordBeingChecked.current) {
+    if (
+      lastInputWord.normalize("NFC") ===
+      wordBeingChecked.current.normalize("NFC")
+    ) {
       markTheWordAsRight(
         wordBeingChecked.current,
         indexOfTheGraphemeCurrentlyChecked,
