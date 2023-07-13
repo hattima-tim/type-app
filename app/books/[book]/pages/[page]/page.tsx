@@ -9,11 +9,8 @@ import { v4 as uuidv4 } from "uuid";
 // import the crypto package, but the package does not work in browser
 import { segmentToChar } from "./inputHandlers/segmenter";
 import { segmentToWord } from "./inputHandlers/segmenter";
-import { checkUserInputChars } from "./inputHandlers/inputCheck";
-import { markTheWordAsRight } from "./inputHandlers/markWord";
-import handleInputCheckResult from "./inputHandlers/handleInputCheckResult";
 import { getPageData } from "@/app/bookApi";
-import handleBackspace from "./inputHandlers/handleBackspace";
+import handleUserTyping from "./inputHandlers/handleUserTyping";
 
 export default function Page() {
   const params = useParams();
@@ -125,83 +122,20 @@ export default function Page() {
   const charsOfWordBeingChecked = useRef<string[]>([]);
   const prevTotalInputCharCount = useRef(0);
 
-  const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
-    handleTimer();
-    if (e.target.value === "") return; // return if input does not contain any value
-    setUserInput(e.target.value);
-
-    const userInputWords = segmentToWord(e.target.value);
-
-    const lastInputWord = userInputWords[userInputWords.length - 1]; //otherwise lastInpuWord was getting undefined
-    const lastInputWordChars = segmentToChar(lastInputWord);
-
-    const userInputChars = segmentToChar(e.target.value);
-    const newTotalInputCharCount = userInputChars.length;
-    const isUserBackspacing =
-      prevTotalInputCharCount.current > newTotalInputCharCount;
-    prevTotalInputCharCount.current = newTotalInputCharCount;
-
-    if (isUserBackspacing) {
-      const copyIndexOfTheGraphemeCurrentlyChecked = {
-        ...indexOfTheGraphemeCurrentlyChecked,
-      };
-      const copyIndexOfTheWordCurrentlyChecked = {
-        ...indexOfTheWordCurrentlyChecked,
-      };
-
-      handleBackspace(
-        updateInformationVisibleToTheUser,
-        copyIndexOfTheGraphemeCurrentlyChecked,
-        copyIndexOfTheWordCurrentlyChecked
-      );
-      indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
-      indexOfTheGraphemeCurrentlyChecked.current =
-        lastInputWordChars.length - 1;
-      return;
-    }
-
-    if (!isUserBackspacing) {
-      indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
-      wordBeingChecked.current =
-        wordsFromStoredStr.current[indexOfTheWordCurrentlyChecked.current];
-      charsOfWordBeingChecked.current = segmentToChar(wordBeingChecked.current);
-
-      indexOfTheGraphemeCurrentlyChecked.current =
-        lastInputWordChars.length - 1;
-
-      // return from the func if user input exceeds the stored string value
-      // this will prevent errors
-      if (userInputWords.length > wordsFromStoredStr.current.length) return;
-
-      const isUserInputCorrect = checkUserInputChars(
-        lastInputWordChars,
-        charsOfWordBeingChecked.current,
-        indexOfTheGraphemeCurrentlyChecked.current
-      );
-      if (isUserInputCorrect === "user exceeded word limit") return;
-
-      handleInputCheckResult(
-        isUserInputCorrect,
-        updateInformationVisibleToTheUser,
-        indexOfTheGraphemeCurrentlyChecked,
-        indexOfTheWordCurrentlyChecked
-      );
-
-      // the following code is necessary for when, a/multiple char in a word
-      // incorrectly typed but autocompletion of the whole word makes it
-      // correct. So, the following code checks if the whole word is correct
-      if (
-        lastInputWord.normalize("NFC") ===
-        wordBeingChecked.current.normalize("NFC")
-      ) {
-        markTheWordAsRight(
-          wordBeingChecked.current,
-          indexOfTheGraphemeCurrentlyChecked,
-          updateInformationVisibleToTheUser,
-          indexOfTheWordCurrentlyChecked
-        );
-      }
-    }
+  const handleUserTypingWrapper = (e: ChangeEvent<HTMLInputElement>) => {
+    handleUserTyping(
+      e,
+      setUserInput,
+      segmentToWord,
+      segmentToChar,
+      prevTotalInputCharCount,
+      indexOfTheGraphemeCurrentlyChecked,
+      indexOfTheWordCurrentlyChecked,
+      updateInformationVisibleToTheUser,
+      wordBeingChecked,
+      wordsFromStoredStr,
+      charsOfWordBeingChecked
+    );
   };
 
   return (
@@ -214,7 +148,7 @@ export default function Page() {
         inputMode="text"
         ref={inputRef}
         id="input"
-        onChange={handleUserTyping}
+        onChange={handleUserTypingWrapper}
       ></input>
 
       <div className="flex flex-wrap w-full px-5 h-20 border-gray-700 text-xl">
