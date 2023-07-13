@@ -10,7 +10,10 @@ export default function handleBackspace(
           copyIndexOfTheGraphemeCurrentlyChecked.current
         ];
 
-      informationToBeChanged.color = "text-gray-500";
+      if (informationToBeChanged) {
+        // informationToBeChanged can be undefined for various unprecdible reason
+        informationToBeChanged.color = "text-gray-500";
+      }
     }
   );
 }
