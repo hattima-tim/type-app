@@ -123,99 +123,84 @@ export default function Page() {
 
   const wordBeingChecked = useRef("");
   const charsOfWordBeingChecked = useRef<string[]>([]);
+  const prevTotalInputCharCount = useRef(0);
 
   const handleUserTyping = (e: ChangeEvent<HTMLInputElement>) => {
     handleTimer();
-
+    if (e.target.value === "") return; // return if input does not contain any value
     setUserInput(e.target.value);
 
     const userInputWords = segmentToWord(e.target.value);
-    const lastInputWord =
-      userInputWords.length === 0
-        ? ""
-        : userInputWords[userInputWords.length - 1]; //otherwise lastInpuWord was getting undefined
+
+    const lastInputWord = userInputWords[userInputWords.length - 1]; //otherwise lastInpuWord was getting undefined
     const lastInputWordChars = segmentToChar(lastInputWord);
 
-    if (lastInputWordChars.length < charsOfWordBeingChecked.current.length) {
-      // because, when user starts deleting a word bigger than the wordBeingChecked and
-      // comes to a point a where both the above lengths are equal, the value of the
-      // indexOfTheGraphemeCurrentlyChecked.current then would be equal to the lastInputWordChars length.
-      // But there is nothing in that index.
-      // So, the code should not execute when the lengths are equal.
-      const weCameFromTheFirstCharacterOfAWord =
-        0 === indexOfTheGraphemeCurrentlyChecked.current;
-      const didWeGetSpaceWhileBackspacing =
-        lastInputWordChars[0] === " " && weCameFromTheFirstCharacterOfAWord;
+    const userInputChars = segmentToChar(e.target.value);
+    const newTotalInputCharCount = userInputChars.length;
+    const isUserBackspacing =
+      prevTotalInputCharCount.current > newTotalInputCharCount;
+    prevTotalInputCharCount.current = newTotalInputCharCount;
 
-      const weCameFromTheLastCharOfAWord =
-        charsOfWordBeingChecked.current.length - 1 ===
-        indexOfTheGraphemeCurrentlyChecked.current;
-      const didWeGetSpaceWhileForwarding =
-        lastInputWordChars[0] === " " && weCameFromTheLastCharOfAWord;
+    if (isUserBackspacing) {
+      const copyIndexOfTheGraphemeCurrentlyChecked = {
+        ...indexOfTheGraphemeCurrentlyChecked,
+      };
+      const copyIndexOfTheWordCurrentlyChecked = {
+        ...indexOfTheWordCurrentlyChecked,
+      };
 
-      if (
-        (!didWeGetSpaceWhileForwarding || didWeGetSpaceWhileBackspacing) &&
-        (userInputWords.length === indexOfTheWordCurrentlyChecked.current ||
-          lastInputWordChars.length ===
-            indexOfTheGraphemeCurrentlyChecked.current)
-      ) {
-        const copyIndexOfTheGraphemeCurrentlyChecked = {
-          ...indexOfTheGraphemeCurrentlyChecked,
-        };
-        const copyIndexOfTheWordCurrentlyChecked = {
-          ...indexOfTheWordCurrentlyChecked,
-        };
-
-        handleBackspace(
-          updateInformationVisibleToTheUser,
-          copyIndexOfTheGraphemeCurrentlyChecked,
-          copyIndexOfTheWordCurrentlyChecked
-        );
-        indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
-        indexOfTheGraphemeCurrentlyChecked.current =
-          lastInputWordChars.length - 1;
-        return;
-      }
+      handleBackspace(
+        updateInformationVisibleToTheUser,
+        copyIndexOfTheGraphemeCurrentlyChecked,
+        copyIndexOfTheWordCurrentlyChecked
+      );
+      indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
+      indexOfTheGraphemeCurrentlyChecked.current =
+        lastInputWordChars.length - 1;
+      return;
     }
 
-    indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
-    wordBeingChecked.current =
-      wordsFromStoredStr.current[indexOfTheWordCurrentlyChecked.current];
-    charsOfWordBeingChecked.current = segmentToChar(wordBeingChecked.current);
+    if (!isUserBackspacing) {
+      indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
+      wordBeingChecked.current =
+        wordsFromStoredStr.current[indexOfTheWordCurrentlyChecked.current];
+      charsOfWordBeingChecked.current = segmentToChar(wordBeingChecked.current);
 
-    indexOfTheGraphemeCurrentlyChecked.current = lastInputWordChars.length - 1;
+      indexOfTheGraphemeCurrentlyChecked.current =
+        lastInputWordChars.length - 1;
 
-    // return from the func if user input exceeds the stored string value
-    // this will prevent errors
-    if (userInputWords.length > wordsFromStoredStr.current.length) return;
+      // return from the func if user input exceeds the stored string value
+      // this will prevent errors
+      if (userInputWords.length > wordsFromStoredStr.current.length) return;
 
-    const isUserInputCorrect = checkUserInputChars(
-      lastInputWordChars,
-      charsOfWordBeingChecked.current,
-      indexOfTheGraphemeCurrentlyChecked.current
-    );
-    if (isUserInputCorrect === "user exceeded word limit") return;
+      const isUserInputCorrect = checkUserInputChars(
+        lastInputWordChars,
+        charsOfWordBeingChecked.current,
+        indexOfTheGraphemeCurrentlyChecked.current
+      );
+      if (isUserInputCorrect === "user exceeded word limit") return;
 
-    handleInputCheckResult(
-      isUserInputCorrect,
-      updateInformationVisibleToTheUser,
-      indexOfTheGraphemeCurrentlyChecked,
-      indexOfTheWordCurrentlyChecked
-    );
-
-    // the following code is necessary for when, a/multiple char in a word
-    // incorrectly typed but autocompletion of the whole word makes it
-    // correct. So, the following code checks if the whole word is correct
-    if (
-      lastInputWord.normalize("NFC") ===
-      wordBeingChecked.current.normalize("NFC")
-    ) {
-      markTheWordAsRight(
-        wordBeingChecked.current,
-        indexOfTheGraphemeCurrentlyChecked,
+      handleInputCheckResult(
+        isUserInputCorrect,
         updateInformationVisibleToTheUser,
+        indexOfTheGraphemeCurrentlyChecked,
         indexOfTheWordCurrentlyChecked
       );
+
+      // the following code is necessary for when, a/multiple char in a word
+      // incorrectly typed but autocompletion of the whole word makes it
+      // correct. So, the following code checks if the whole word is correct
+      if (
+        lastInputWord.normalize("NFC") ===
+        wordBeingChecked.current.normalize("NFC")
+      ) {
+        markTheWordAsRight(
+          wordBeingChecked.current,
+          indexOfTheGraphemeCurrentlyChecked,
+          updateInformationVisibleToTheUser,
+          indexOfTheWordCurrentlyChecked
+        );
+      }
     }
   };
 
