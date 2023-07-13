@@ -11,14 +11,22 @@ import { segmentToChar } from "./inputHandlers/segmenter";
 import { segmentToWord } from "./inputHandlers/segmenter";
 import { getPageData } from "@/app/bookApi";
 import handleUserTyping from "./inputHandlers/handleUserTyping";
+import React from "react";
 
 export default function Page() {
   const params = useParams();
   const pageNumber = parseInt(params.page);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [inputFieldIsInFocus, setInputFieldIsInFocus] = useState(true);
   useEffect(() => {
     inputRef.current?.focus();
+    inputRef.current?.addEventListener("focus", () => {
+      setInputFieldIsInFocus(true);
+    });
+    inputRef.current?.addEventListener("blur", () => {
+      setInputFieldIsInFocus(false);
+    });
   }, []);
 
   const [userInput, setUserInput] = useState("");
@@ -152,17 +160,24 @@ export default function Page() {
       ></input>
 
       <div className="flex flex-wrap w-full px-5 h-20 border-gray-700 text-xl">
-        {informationVisibileToTheUser.map((charArr) => {
-          return charArr.map((char) => {
+        {informationVisibileToTheUser.map((charArr, wordIndex) => {
+          return charArr.map((char, charIndex) => {
             return (
-              <div
-                key={char.id}
-                className={`${char.color} ${
-                  char.segment === " " ? "mr-2" : "mr-0"
-                }`}
-              >
-                {char.segment}
-              </div>
+              <React.Fragment key={char.id}>
+                <div
+                  className={`${char.color} ${
+                    char.segment === " " ? "mr-2" : "mr-0"
+                  }`}
+                >
+                  {char.segment}
+                </div>
+
+                {inputFieldIsInFocus &&
+                  indexOfTheGraphemeCurrentlyChecked.current === charIndex &&
+                  indexOfTheWordCurrentlyChecked.current === wordIndex && (
+                    <div className="bg-black h-5 self-center w-[2px]"></div>
+                  )}
+              </React.Fragment>
             );
           });
         })}
