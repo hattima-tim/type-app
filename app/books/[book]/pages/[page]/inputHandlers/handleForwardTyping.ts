@@ -1,3 +1,7 @@
+import handleInputCheckResult from "./handleInputCheckResult";
+import { checkUserInputChars } from "./inputCheck";
+import { markTheWordAsRight } from "./markWord";
+
 const handleForwardTyping = (
   userInputWords: string[],
   lastInputWordChars: string[],
@@ -8,32 +12,7 @@ const handleForwardTyping = (
   wordsFromStoredStr: { current: string[] },
   charsOfWordBeingChecked: { current: string[] },
   updateInformationVisibleToTheUser: Function,
-  segmentToChar: (arg: string) => string[],
-  checkUserInputChars: (
-    lastInputWordChars: Array<string>,
-    charsOfWordBeingChecked: Array<string>,
-    indexOfTheGraphemeCurrentlyChecked: number
-  ) => boolean | "user exceeded word limit",
-  handleInputCheckResult: (
-    arg1: boolean,
-    arg2: Function,
-    arg3: {
-      current: number;
-    },
-    arg4: {
-      current: number;
-    }
-  ) => void,
-  markTheWordAsRight: (
-    arg1: string,
-    arg2: {
-      current: number;
-    },
-    arg3: Function,
-    arg4: {
-      current: number;
-    }
-  ) => void
+  segmentToChar: (arg: string) => string[]
 ) => {
   indexOfTheWordCurrentlyChecked.current = userInputWords.length - 1;
   wordBeingChecked.current =

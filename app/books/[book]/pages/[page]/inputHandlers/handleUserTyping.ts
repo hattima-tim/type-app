@@ -1,9 +1,6 @@
 import { ChangeEvent } from "react";
 import handleBackspace from "./handleBackspace";
 import handleForwardTyping from "./handleForwardTyping";
-import { checkUserInputChars } from "./inputCheck";
-import { markTheWordAsRight } from "./markWord";
-import handleInputCheckResult from "./handleInputCheckResult";
 
 const handleUserTyping = (
   e: ChangeEvent<HTMLInputElement>,
@@ -61,10 +58,7 @@ const handleUserTyping = (
       wordsFromStoredStr,
       charsOfWordBeingChecked,
       updateInformationVisibleToTheUser,
-      segmentToChar,
-      checkUserInputChars,
-      handleInputCheckResult,
-      markTheWordAsRight
+      segmentToChar
     );
   }
 };
