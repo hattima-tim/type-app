@@ -159,7 +159,10 @@ export default function Page() {
         onChange={handleUserTypingWrapper}
       ></input>
 
-      <div className="flex flex-wrap w-full px-5 h-20 border-gray-700 text-xl">
+      <div
+        className="flex flex-wrap w-full px-80 border-gray-700 text-xl"
+        onClick={() => inputRef.current?.focus()}
+      >
         {informationVisibileToTheUser.map((charArr, wordIndex) => {
           return charArr.map((char, charIndex) => {
             return (
