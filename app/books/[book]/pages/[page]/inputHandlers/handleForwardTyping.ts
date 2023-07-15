@@ -11,6 +11,8 @@ const handleForwardTyping = (
   wordBeingChecked: { current: string },
   wordsFromStoredStr: { current: string[] },
   charsOfWordBeingChecked: { current: string[] },
+  totalCorrectChars: { current: Array<string> },
+  totalIncorrectChars: { current: Array<string> },
   updateInformationVisibleToTheUser: Function,
   segmentToChar: (arg: string) => string[]
 ) => {
@@ -36,7 +38,9 @@ const handleForwardTyping = (
     isUserInputCorrect,
     updateInformationVisibleToTheUser,
     indexOfTheGraphemeCurrentlyChecked,
-    indexOfTheWordCurrentlyChecked
+    indexOfTheWordCurrentlyChecked,
+    totalCorrectChars,
+    totalIncorrectChars
   );
 
   // the following code is necessary for when, a/multiple char in a word
@@ -49,7 +53,9 @@ const handleForwardTyping = (
       wordBeingChecked.current,
       indexOfTheGraphemeCurrentlyChecked,
       updateInformationVisibleToTheUser,
-      indexOfTheWordCurrentlyChecked
+      indexOfTheWordCurrentlyChecked,
+      totalCorrectChars,
+      totalIncorrectChars
     );
   }
 };

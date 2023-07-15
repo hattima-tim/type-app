@@ -13,7 +13,9 @@ const handleUserTyping = (
   updateInformationVisibleToTheUser: Function,
   wordBeingChecked: { current: string },
   wordsFromStoredStr: { current: string[] },
-  charsOfWordBeingChecked: { current: string[] }
+  charsOfWordBeingChecked: { current: string[] },
+  totalCorrectChars: { current: Array<string> },
+  totalIncorrectChars: { current: Array<string> }
 ) => {
   if (e.target.value === "") return; // return if input does not contain any value
   setUserInput(e.target.value);
@@ -57,6 +59,8 @@ const handleUserTyping = (
       wordBeingChecked,
       wordsFromStoredStr,
       charsOfWordBeingChecked,
+      totalCorrectChars,
+      totalIncorrectChars,
       updateInformationVisibleToTheUser,
       segmentToChar
     );

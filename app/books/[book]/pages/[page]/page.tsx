@@ -57,80 +57,53 @@ export default function Page() {
     fetchData();
   }, [pageNumber, params.book, updateInformationVisibleToTheUser]);
 
-  const [timeRemaining, setTimeRemaining] = useState(60);
+  const [minutePassed, setMinutePassed] = useState(0);
+  const [timerStatus, setTimerStatus] = useState("off");
 
-  let timer = useRef<ReturnType<typeof setInterval>>();
-  const handleTimer = () => {
-    if (timer.current === undefined) {
-      timer.current = setInterval(() => {
-        setTimeRemaining((prevState) => prevState - 1);
-      }, 1000);
+  useEffect(() => {
+    let timeOutId: number | NodeJS.Timeout;
+    if (timerStatus === "on") {
+      timeOutId = setTimeout(() => {
+        setMinutePassed((prev) => prev + 1);
+      }, 60000);
     }
-  };
+
+    return () => clearTimeout(timeOutId);
+  }, [minutePassed, timerStatus]);
 
   const [wpm, setWpm] = useState(0);
 
-  const calculateWPM = ({
-    totalCorrectChars,
-    totalIncorrectChars,
-  }: {
-    totalCorrectChars: number;
-    totalIncorrectChars: number;
-  }) => {
-    const netWpm = (totalCorrectChars / 5 - totalIncorrectChars) / 1;
-
-    return netWpm;
-  };
-
   useEffect(() => {
-    if (timeRemaining === 0) {
-      clearInterval(timer.current);
+    // the following totalTypedCharsInfo related code is not in a seperate
+    // function because if I do so, useEffect hook asks to add it
+    // in the dependency array. Adding a func in the array makes the hook
+    // run on every render. react suggested it is clean to move the code inside the effect
+    const calculateWPM = () => {
+      const netWpm =
+        ((totalCorrectChars.current.length +
+          totalIncorrectChars.current.length) /
+          5 -
+          totalIncorrectChars.current.length) /
+        minutePassed;
 
-      // the following totalTypedCharsInfo related code is not in a seperate
-      // function because if I do so, useEffect hook asks to add it
-      // in the dependency array. Adding a func in the array makes the hook
-      // run on every render
-      const totalTypedCharsInfo = informationVisibileToTheUser.reduce(
-        (prev, current) => {
-          const correctCharsObjs = current.filter(
-            (char) => char.color === "text-black"
-          );
-          const correctCharsStrArr = correctCharsObjs.map((charObj) => {
-            return charObj.segment;
-          });
-          const correctCharsStr = correctCharsStrArr.join("");
-          // this is done to calculate each individual char typed. For example,
-          // the length of তুমি is 4, not 2
+      return netWpm !== Infinity && netWpm ? netWpm : 0; //netWpm is NaN if it is not calculated yet because minutePassed is 0 then
+    };
 
-          const totalCorrectChars =
-            prev.totalCorrectChars + correctCharsStr.length;
-
-          const incorrectCharsObjs = current.filter(
-            (char) => char.color === "text-red-600"
-          );
-          const incorrectCharsStrArr = incorrectCharsObjs.map((charObj) => {
-            return charObj.segment;
-          });
-          const incorrectCharsStr = incorrectCharsStrArr.join("");
-
-          const totalIncorrectChars =
-            prev.totalIncorrectChars + incorrectCharsStr.length;
-
-          return { totalCorrectChars, totalIncorrectChars };
-        },
-        { totalCorrectChars: 0, totalIncorrectChars: 0 }
-      );
-
-      const calculatedWPM = Math.round(calculateWPM(totalTypedCharsInfo));
-      setWpm(calculatedWPM);
-    }
-  }, [timeRemaining, informationVisibileToTheUser]);
+    const calculatedWPM = Math.round(calculateWPM());
+    setWpm(calculatedWPM);
+  }, [minutePassed]);
 
   const wordBeingChecked = useRef("");
   const charsOfWordBeingChecked = useRef<string[]>([]);
   const prevTotalInputCharCount = useRef(0);
+  const totalCorrectChars = useRef([]);
+  const totalIncorrectChars = useRef([]);
 
   const handleUserTypingWrapper = (e: ChangeEvent<HTMLInputElement>) => {
+    if (timerStatus === "off") {
+      setTimerStatus("on");
+    }
+
     handleUserTyping(
       e,
       setUserInput,
@@ -142,13 +115,15 @@ export default function Page() {
       updateInformationVisibleToTheUser,
       wordBeingChecked,
       wordsFromStoredStr,
-      charsOfWordBeingChecked
+      charsOfWordBeingChecked,
+      totalCorrectChars,
+      totalIncorrectChars
     );
   };
 
   return (
     <>
-      <h1>{timeRemaining}</h1>
+      <h1>{minutePassed}</h1>
       <h1>WPM:{wpm}</h1>
 
       <label htmlFor="input"></label>
