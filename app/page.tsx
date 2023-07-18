@@ -1,11 +1,49 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getAllBooksData } from "./bookApi";
+import { getAllBooksData, Book } from "./bookApi";
 
-export default async function Home() {
-  const books = (await getAllBooksData()) || [];
+export default function Home() {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [userAuthStatus, setUserAuthStatus] = useState("not-logged");
+
+  useEffect(() => {
+    getAllBooksData().then((val) => {
+      if (val) {
+        setBooks(val);
+      }
+    });
+
+    fetch("http://localhost:3000/user", {
+      credentials: "include",
+      mode: "cors",
+      method: "GET",
+    }).then(async (val) => {
+      if (await val.json()) {
+        setUserAuthStatus("logged-in");
+      }
+    });
+  }, []);
+
   return (
     <div>
+      <nav className="flex justify-between mx-8 mt-4">
+        <Link href="/">
+          <h1>Typing Test App</h1>
+        </Link>
+        <div className="flex gap-4">
+          {userAuthStatus !== "logged-in" ? (
+            <Link href="/authentication/sign-up">Sign Up</Link>
+          ) : (
+            <button>Log Out</button>
+          )}
+          <Link href="/leaderboard">Leaderboard</Link>
+          <Link href="/about">About</Link>
+        </div>
+      </nav>
+
       <div className="flex flex-col items-center justify-center min-h-screen py-2">
         <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
           <h1 className="text-6xl font-bold">Welcome to Typing Test App</h1>
