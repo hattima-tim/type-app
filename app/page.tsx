@@ -27,6 +27,20 @@ export default function Home() {
     });
   }, []);
 
+  const handleLogOut = async () => {
+    const response = await fetch(
+      "http://localhost:3000/authentication/log-out",
+      {
+        credentials: "include",
+        method: "POST",
+      }
+    );
+
+    if (response.status === 200) {
+      setUserAuthStatus("not-logged");
+    }
+  };
+
   return (
     <div>
       <nav className="flex justify-between mx-8 mt-4">
@@ -37,7 +51,7 @@ export default function Home() {
           {userAuthStatus !== "logged-in" ? (
             <Link href="/authentication/sign-up">Sign Up</Link>
           ) : (
-            <button>Log Out</button>
+            <button onClick={handleLogOut}>Log Out</button>
           )}
           <Link href="/leaderboard">Leaderboard</Link>
           <Link href="/about">About</Link>
