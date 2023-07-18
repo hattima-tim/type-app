@@ -42,3 +42,4 @@ async function getPageData(
 }
 
 export { getAllBooksData, getBookData, getPageData };
+export type { Book };
