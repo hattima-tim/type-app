@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google";
-import Link from "next/link";
 import "./globals.css";
+import AuthContextProvider from "./authContextProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <AuthContextProvider>{children}</AuthContextProvider>
+      </body>
     </html>
   );
 }
