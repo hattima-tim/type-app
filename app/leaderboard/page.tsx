@@ -28,7 +28,20 @@ export default function Leaderboard() {
 
   return (
     <>
-      <h1>{authState}</h1>
+      {authState !== "logged-in" && (
+        <div className="bg-indigo-600 px-4 py-3 text-white">
+          <p className="text-center text-sm font-medium">
+            Want to see your score in the leaderboard?
+            <a
+              href="/authentication/sign-up"
+              className="ml-1 inline-block underline"
+            >
+              Sign up now!
+            </a>
+          </p>
+        </div>
+      )}
+
       <table className="table-auto w-full">
         <thead>
           <tr>
