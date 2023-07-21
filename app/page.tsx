@@ -16,17 +16,7 @@ export default function Home() {
         setBooks(val);
       }
     });
-
-    fetch("http://localhost:3000/user", {
-      credentials: "include",
-      mode: "cors",
-      method: "GET",
-    }).then(async (val) => {
-      if (await val.json()) {
-        setAuthState("logged-in");
-      }
-    });
-  }, [setAuthState]);
+  }, []);
 
   const handleLogOut = async () => {
     const response = await fetch(
