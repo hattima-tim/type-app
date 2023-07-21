@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getAllBooksData, Book } from "./bookApi";
+import { AuthContext } from "./authContext";
 
 export default function Home() {
   const [books, setBooks] = useState<Book[]>([]);
-  const [userAuthStatus, setUserAuthStatus] = useState("not-logged");
+  const [authState, setAuthState] = useContext(AuthContext);
 
   useEffect(() => {
     getAllBooksData().then((val) => {
@@ -22,10 +23,10 @@ export default function Home() {
       method: "GET",
     }).then(async (val) => {
       if (await val.json()) {
-        setUserAuthStatus("logged-in");
+        setAuthState("logged-in");
       }
     });
-  }, []);
+  }, [setAuthState]);
 
   const handleLogOut = async () => {
     const response = await fetch(
@@ -37,7 +38,7 @@ export default function Home() {
     );
 
     if (response.status === 200) {
-      setUserAuthStatus("not-logged");
+      setAuthState("not-logged");
     }
   };
 
@@ -48,7 +49,7 @@ export default function Home() {
           <h1>Typing Test App</h1>
         </Link>
         <div className="flex gap-4">
-          {userAuthStatus !== "logged-in" ? (
+          {authState !== "logged-in" ? (
             <Link href="/authentication/sign-up">Sign Up</Link>
           ) : (
             <button onClick={handleLogOut}>Log Out</button>
