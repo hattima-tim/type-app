@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState, useEffect, useRef, ChangeEvent } from "react";
+import { useState, useEffect, useRef, ChangeEvent, useContext } from "react";
 import { useImmer } from "use-immer";
 import { v4 as uuidv4 } from "uuid";
 // use uuid package instead of crypto,randomUUID() to create similar
@@ -12,6 +12,7 @@ import { segmentToWord } from "./inputHandlers/segmenter";
 import { getPageData } from "@/app/bookApi";
 import handleUserTyping from "./inputHandlers/handleUserTyping";
 import React from "react";
+import { AuthContext } from "@/app/authContext";
 
 export default function Page() {
   const params = useParams();
@@ -92,6 +93,30 @@ export default function Page() {
     const calculatedWPM = Math.round(calculateWPM());
     setWpm(calculatedWPM);
   }, [minutePassed]);
+
+  const sendWpmDataToBackend = async (wpm: number) => {
+    try {
+      await fetch("http://localhost:3000/users/user/wpm", {
+        method: "POST",
+        credentials: "include",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ wpm: wpm }),
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const [authContext] = useContext(AuthContext);
+
+  useEffect(() => {
+    if (authContext === "logged-in") {
+      sendWpmDataToBackend(wpm);
+    }
+  }, [wpm, authContext]);
 
   const wordBeingChecked = useRef("");
   const charsOfWordBeingChecked = useRef<string[]>([]);
